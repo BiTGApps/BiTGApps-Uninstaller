@@ -1,0 +1,34 @@
+name: BiTGApps Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+       - name: Initial Setup
+         uses: actions/checkout@v2
+
+       - name: Create BiTGApps
+         run: |
+           rm -rf BiTGApps
+           mkdir BiTGApps
+
+       - name: Clone Build Sources
+         run: |
+           git clone https://github.com/BiTGApps/BiTGApps-Uninstaller BiTGApps
+
+       - name: Build BiTGApps Package
+         run: |
+           cd BiTGApps
+           . scripts/envsetup.sh && rm -rf scripts
+           zip -qr9 BiTGApps-v1.0.zip * && cd ..
+           mkdir out && cp -f BiTGApps/BiTGApps-v1.0.zip out
+
+       - name: Upload Build Artifact
+         uses: actions/upload-artifact@v2
+         with:
+           name: BiTGApps-Build
+           path: out/BiTGApps-v1.0.zip
