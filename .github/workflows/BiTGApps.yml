@@ -24,11 +24,11 @@ jobs:
          run: |
            cd BiTGApps
            . scripts/envsetup.sh && rm -rf scripts
-           zip -qr9 BiTGApps-v1.0.zip * && cd ..
-           mkdir out && cp -f BiTGApps/BiTGApps-v1.0.zip out
+           zip -qr9 BiTGApps-v1.1.zip * && cd ..
+           mkdir out && cp -f BiTGApps/BiTGApps-v1.1.zip out
 
        - name: Upload Build Artifact
          uses: actions/upload-artifact@v2
          with:
            name: BiTGApps-Build
-           path: out/BiTGApps-v1.0.zip
+           path: out/BiTGApps-v1.1.zip
