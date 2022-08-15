@@ -44,3 +44,5 @@ rm -rf /data/data/com.google.android*
 mount -o remount,rw,errors=continue /system/priv-app/MicroGGMSCore 2>/dev/null
 umount -l /system/priv-app/MicroGGMSCore 2>/dev/null
 rm -rf /system/priv-app/MicroGGMSCore 2>/dev/null
+# Purge runtime permissions
+rm -rf $(find /data -iname "runtime-permissions.xml" 2>/dev/null)

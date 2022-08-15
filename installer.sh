@@ -362,20 +362,6 @@ on_installed() {
   exit "$?"
 }
 
-RTP_cleanup() {
-  # Did this 6.0+ system already boot and generated runtime permissions
-  if [ -e /data/system/users/0/runtime-permissions.xml ]; then
-    # Purge the runtime permissions to prevent issues after uninstalling GApps
-    rm -rf /data/system/users/*/runtime-permissions.xml
-  fi
-  # Did this 11.0+ system already boot and generated runtime permissions
-  RTP="$(find /data -iname "runtime-permissions.xml" 2>/dev/null)"
-  if [ -e "$RTP" ]; then
-    # Purge the runtime permissions to prevent issues after uninstalling GApps
-    rm -rf "$RTP"
-  fi
-}
-
 get_flags() {
   DATA="false"
   DATA_DE="false"

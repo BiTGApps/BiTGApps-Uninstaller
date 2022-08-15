@@ -9,7 +9,6 @@ system_as_root
 super_partition
 mount_all
 mount_apex
-RTP_cleanup
 get_flags
 on_uninstall
 on_installed
