@@ -40,3 +40,7 @@ rm -rf /data/app/*/com.android.vending*
 rm -rf /data/app/*/com.google.android*
 rm -rf /data/data/com.android.vending*
 rm -rf /data/data/com.google.android*
+# Handle Magisk Magic Mount
+mount -o remount,rw,errors=continue /system/priv-app/MicroGGMSCore 2>/dev/null
+umount -l /system/priv-app/MicroGGMSCore 2>/dev/null
+rm -rf /system/priv-app/MicroGGMSCore 2>/dev/null
