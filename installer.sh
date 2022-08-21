@@ -1,5 +1,14 @@
 # This file is part of The BiTGApps Project
 
+# Installation base is Bootmode script
+if [[ "$(getprop "sys.bootmode")" = "1" ]]; then
+  # System is writable
+  if ! touch $SYSTEM/.rw >/dev/null 2>&1; then
+    echo "! Read-only file system"
+    exit 1
+  fi
+fi
+
 # Allow mounting, when installation base is Magisk
 if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
   # Mount partitions
@@ -142,7 +151,7 @@ mount_apex() {
   if "$BOOTMODE"; then
     return 255
   fi
-  test -d "$SYSTEM/apex" || return 1
+  test -d "$SYSTEM/apex" || return 255
   ui_print "- Mounting /apex"
   local apex dest loop minorx num
   setup_mountpoint /apex
