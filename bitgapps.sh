@@ -7,38 +7,51 @@ rm -rf /data/adb/modules/BiTGApps
 # Remove Magisk Scripts
 rm -rf /data/adb/post-fs-data.d/service.sh
 rm -rf /data/adb/service.d/modprobe.sh
-# Mount partitions
+rm -rf /data/adb/service.d/runtime.sh
+# Magisk Current Base Folder
+MIRROR="$(magisk --path)/.magisk/mirror"
+# Mount actual partitions
 mount -o remount,rw,errors=continue / > /dev/null 2>&1
 mount -o remount,rw,errors=continue /dev/root > /dev/null 2>&1
 mount -o remount,rw,errors=continue /dev/block/dm-0 > /dev/null 2>&1
 mount -o remount,rw,errors=continue /system > /dev/null 2>&1
 mount -o remount,rw,errors=continue /product > /dev/null 2>&1
+mount -o remount,rw,errors=continue /system_ext > /dev/null 2>&1
+# Mount mirror partitions
+mount -o remount,rw,errors=continue $MIRROR/system_root 2>/dev/null
+mount -o remount,rw,errors=continue $MIRROR/system 2>/dev/null
+mount -o remount,rw,errors=continue $MIRROR/product 2>/dev/null
+mount -o remount,rw,errors=continue $MIRROR/system_ext 2>/dev/null
+# Set installation layout
+MPOINT="$(ls -d system)"
+SYSTEM="$MIRROR/$MPOINT"
+test -d "$MIRROR" || SYSTEM='/system'
 # Remove Google Mobile Services
-rm -rf /system/app/FaceLock
-rm -rf /system/app/GoogleCalendarSyncAdapter
-rm -rf /system/app/GoogleContactsSyncAdapter
-rm -rf /system/priv-app/ConfigUpdater
-rm -rf /system/priv-app/GmsCoreSetupPrebuilt
-rm -rf /system/priv-app/GoogleLoginService
-rm -rf /system/priv-app/GoogleServicesFramework
-rm -rf /system/priv-app/Phonesky
-rm -rf /system/priv-app/PrebuiltGmsCore
-rm -rf /system/etc/default-permissions/default-permissions.xml
-rm -rf /system/etc/default-permissions/gapps-permission.xml
-rm -rf /system/etc/permissions/com.google.android.dialer.support.xml
-rm -rf /system/etc/permissions/com.google.android.maps.xml
-rm -rf /system/etc/permissions/privapp-permissions-google.xml
-rm -rf /system/etc/permissions/split-permissions-google.xml
-rm -rf /system/etc/preferred-apps/google.xml
-rm -rf /system/etc/sysconfig/google.xml
-rm -rf /system/etc/sysconfig/google_build.xml
-rm -rf /system/etc/sysconfig/google_exclusives_enable.xml
-rm -rf /system/etc/sysconfig/google-hiddenapi-package-whitelist.xml
-rm -rf /system/etc/sysconfig/google-rollback-package-whitelist.xml
-rm -rf /system/etc/sysconfig/google-staged-installer-whitelist.xml
-rm -rf /system/framework/com.google.android.dialer.support.jar
-rm -rf /system/framework/com.google.android.maps.jar
-rm -rf /system/product/overlay/PlayStoreOverlay.apk
+rm -rf $SYSTEM/app/FaceLock
+rm -rf $SYSTEM/app/GoogleCalendarSyncAdapter
+rm -rf $SYSTEM/app/GoogleContactsSyncAdapter
+rm -rf $SYSTEM/priv-app/ConfigUpdater
+rm -rf $SYSTEM/priv-app/GmsCoreSetupPrebuilt
+rm -rf $SYSTEM/priv-app/GoogleLoginService
+rm -rf $SYSTEM/priv-app/GoogleServicesFramework
+rm -rf $SYSTEM/priv-app/Phonesky
+rm -rf $SYSTEM/priv-app/PrebuiltGmsCore
+rm -rf $SYSTEM/etc/default-permissions/default-permissions.xml
+rm -rf $SYSTEM/etc/default-permissions/gapps-permission.xml
+rm -rf $SYSTEM/etc/permissions/com.google.android.dialer.support.xml
+rm -rf $SYSTEM/etc/permissions/com.google.android.maps.xml
+rm -rf $SYSTEM/etc/permissions/privapp-permissions-google.xml
+rm -rf $SYSTEM/etc/permissions/split-permissions-google.xml
+rm -rf $SYSTEM/etc/preferred-apps/google.xml
+rm -rf $SYSTEM/etc/sysconfig/google.xml
+rm -rf $SYSTEM/etc/sysconfig/google_build.xml
+rm -rf $SYSTEM/etc/sysconfig/google_exclusives_enable.xml
+rm -rf $SYSTEM/etc/sysconfig/google-hiddenapi-package-whitelist.xml
+rm -rf $SYSTEM/etc/sysconfig/google-rollback-package-whitelist.xml
+rm -rf $SYSTEM/etc/sysconfig/google-staged-installer-whitelist.xml
+rm -rf $SYSTEM/framework/com.google.android.dialer.support.jar
+rm -rf $SYSTEM/framework/com.google.android.maps.jar
+rm -rf $SYSTEM/product/overlay/PlayStoreOverlay.apk
 # Remove application data
 rm -rf /data/app/com.android.vending*
 rm -rf /data/app/com.google.android*
@@ -47,7 +60,7 @@ rm -rf /data/app/*/com.google.android*
 rm -rf /data/data/com.android.vending*
 rm -rf /data/data/com.google.android*
 # Handle Magisk Magic Mount
-umount -l /system/priv-app/PrebuiltGmsCore 2>/dev/null
-rm -rf /system/priv-app/PrebuiltGmsCore 2>/dev/null
+umount -l $SYSTEM/priv-app/PrebuiltGmsCore 2>/dev/null
+rm -rf $SYSTEM/priv-app/PrebuiltGmsCore 2>/dev/null
 # Purge runtime permissions
 rm -rf $(find /data -iname "runtime-permissions.xml" 2>/dev/null)

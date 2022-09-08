@@ -1,5 +1,8 @@
 # This file is part of The BiTGApps Project
 
+# Magisk Current Base Folder
+MIRROR="$(magisk --path)/.magisk/mirror"
+
 # Installation base is Bootmode script
 if [[ "$(getprop "sys.bootmode")" = "1" ]]; then
   # System is writable
@@ -11,15 +14,23 @@ fi
 
 # Allow mounting, when installation base is Magisk
 if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
-  # Mount partitions
+  # Mount actual partitions
   mount -o remount,rw,errors=continue / > /dev/null 2>&1
   mount -o remount,rw,errors=continue /dev/root > /dev/null 2>&1
   mount -o remount,rw,errors=continue /dev/block/dm-0 > /dev/null 2>&1
   mount -o remount,rw,errors=continue /system > /dev/null 2>&1
   mount -o remount,rw,errors=continue /product > /dev/null 2>&1
   mount -o remount,rw,errors=continue /system_ext > /dev/null 2>&1
+  # Mount mirror partitions
+  mount -o remount,rw,errors=continue $MIRROR/system_root 2>/dev/null
+  mount -o remount,rw,errors=continue $MIRROR/system 2>/dev/null
+  mount -o remount,rw,errors=continue $MIRROR/product 2>/dev/null
+  mount -o remount,rw,errors=continue $MIRROR/system_ext 2>/dev/null
   # Set installation layout
-  SYSTEM="/system"
+  MPOINT="$(ls -d system)"
+  SYSTEM="$MIRROR/$MPOINT"
+  # Backup installation layout
+  SYSTEM_AS_SYSTEM="$SYSTEM"
   # System is writable
   if ! touch $SYSTEM/.rw >/dev/null 2>&1; then
     echo "! Read-only file system"
@@ -28,13 +39,11 @@ if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
 fi
 
 # Product is a dedicated partition
-case "$(getprop "sys.bootmode")" in
-  "2" )
-    if grep -q " $(readlink -f /product) " /proc/mounts; then
-      ln -sf /product /system
-    fi
-    ;;
-esac
+if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
+  if grep -q " $(readlink -f /product) " /proc/mounts; then
+    ln -sf /product /system
+  fi
+fi
 
 # Detect whether in boot mode
 [ -z $BOOTMODE ] && ps | grep zygote | grep -qv grep && BOOTMODE="true"
@@ -401,7 +410,9 @@ get_flags() {
 on_uninstall() {
   if [ -d "/system/priv-app/MicroGGMSCore" ]; then
     ui_print "- Uninstalling MicroG"
-    source $TMP/microg.sh && return 255
+    source $TMP/microg.sh
+    # Terminate current loop
+    return 255
   fi
   if [ -d "/system/priv-app/SetupWizardPrebuilt" ]; then
     on_abort "! SetupWizard Installed"
