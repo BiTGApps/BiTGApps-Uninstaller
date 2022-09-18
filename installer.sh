@@ -437,7 +437,7 @@ print_title() {
   ui_print "$BAR"
 }
 
-print_title "BiTGApps v1.2 Uninstaller"
+print_title "BiTGApps v1.3 Uninstaller"
 
 # Load utility functions
 . $TMP/util_functions.sh
