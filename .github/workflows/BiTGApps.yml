@@ -29,14 +29,14 @@ jobs:
          run: |
            cd BiTGApps
            . scripts/envsetup.sh && rm -rf scripts
-           zip -qr9 BiTGApps-v1.3.zip * && cd ..
-           cp -f BiTGApps/BiTGApps-v1.3.zip out
+           zip -qr9 BiTGApps-v1.4.zip * && cd ..
+           cp -f BiTGApps/BiTGApps-v1.4.zip out
 
        - name: Sign BiTGApps Package
          run: |
            wget https://github.com/BiTGApps/BiTGApps/raw/master/tools/zipsigner/zipsigner.jar
-           sudo java -jar zipsigner.jar out/BiTGApps-v1.3.zip out/BiTGApps-v1.3-Signed.zip
-           rm -rf out/BiTGApps-v1.3.zip && mv -f out/BiTGApps-v1.3-Signed.zip out/BiTGApps-v1.3.zip
+           sudo java -jar zipsigner.jar out/BiTGApps-v1.4.zip out/BiTGApps-v1.4-Signed.zip
+           rm -rf out/BiTGApps-v1.4.zip && mv -f out/BiTGApps-v1.4-Signed.zip out/BiTGApps-v1.4.zip
 
        - name: Github Release CLI
          run: |
@@ -44,7 +44,7 @@ jobs:
 
        - name: Release Signed Package
          env:
-           RELEASE: v1.3
+           RELEASE: v1.4
          run: |
            github-release upload \
            --owner "BiTGApps" \
@@ -52,10 +52,10 @@ jobs:
            --token "$TOKEN" \
            --tag "${RELEASE}" \
            --release-name "BiTGApps ${RELEASE}" \
-           "out/BiTGApps-v1.3.zip"
+           "out/BiTGApps-v1.4.zip"
 
        - name: Upload Build Artifact
          uses: actions/upload-artifact@v2
          with:
            name: BiTGApps-Build
-           path: out/BiTGApps-v1.3.zip
+           path: out/BiTGApps-v1.4.zip
