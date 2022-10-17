@@ -49,6 +49,8 @@ rm -rf $SYSTEM/etc/sysconfig/google_exclusives_enable.xml
 rm -rf $SYSTEM/etc/sysconfig/google-hiddenapi-package-whitelist.xml
 rm -rf $SYSTEM/etc/sysconfig/google-rollback-package-whitelist.xml
 rm -rf $SYSTEM/etc/sysconfig/google-staged-installer-whitelist.xml
+rm -rf $SYSTEM/etc/security/fsverity/gms_fsverity_cert.der
+rm -rf $SYSTEM/etc/security/fsverity/play_store_fsi_cert.der
 rm -rf $SYSTEM/framework/com.google.android.dialer.support.jar
 rm -rf $SYSTEM/framework/com.google.android.maps.jar
 rm -rf $SYSTEM/product/overlay/PlayStoreOverlay.apk
