@@ -410,16 +410,16 @@ get_flags() {
 }
 
 on_uninstall() {
-  if [ -d "/system/priv-app/MicroGGMSCore" ]; then
+  if [ -d "$SYSTEM/priv-app/MicroGGMSCore" ]; then
     ui_print "- Uninstalling MicroG"
     source $TMP/microg.sh
     # Terminate current loop
     return 255
   fi
-  if [ -d "/system/priv-app/SetupWizardPrebuilt" ]; then
+  if [ -d "$SYSTEM/priv-app/SetupWizardPrebuilt" ]; then
     on_abort "! SetupWizard Installed"
   fi
-  if [ -d "/system/priv-app/PrebuiltGmsCore" ]; then
+  if [ -d "$SYSTEM/priv-app/PrebuiltGmsCore" ]; then
     ui_print "- Uninstalling GApps"
     source $TMP/bitgapps.sh
   fi

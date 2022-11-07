@@ -5,6 +5,7 @@
 # Remove Magisk Scripts
 rm -rf /data/adb/post-fs-data.d/service.sh
 rm -rf /data/adb/service.d/modprobe.sh
+rm -rf /data/adb/service.d/module.sh
 rm -rf /data/adb/service.d/runtime.sh
 # Magisk Current Base Folder
 MIRROR="$(magisk --path)/.magisk/mirror"
@@ -59,9 +60,6 @@ rm -rf /data/app/*/com.android.vending*
 rm -rf /data/app/*/com.google.android*
 rm -rf /data/data/com.android.vending*
 rm -rf /data/data/com.google.android*
-# Handle Magisk Magic Mount
-umount -l $SYSTEM/priv-app/PrebuiltGmsCore 2>/dev/null
-rm -rf $SYSTEM/priv-app/PrebuiltGmsCore 2>/dev/null
 # Purge runtime permissions
 rm -rf $(find /data -iname "runtime-permissions.xml" 2>/dev/null)
 # Remove BiTGApps Module
