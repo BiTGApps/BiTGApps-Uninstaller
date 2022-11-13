@@ -51,24 +51,24 @@ fi
 
 # Extract utility script
 if [ "$BOOTMODE" = "false" ]; then
-  unzip -o "$ZIPFILE" "util_functions.sh" -d "$TMP" 2>/dev/null
+  unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP"
 fi
 # Allow unpack, when installation base is Magisk
 if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
-  $(unzip -o "$ZIPFILE" "util_functions.sh" -d "$TMP" >/dev/null 2>&1)
+  $(unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP")
 fi
 chmod +x "$TMP/util_functions.sh"
 
 # Extract uninstaller script
 if [ "$BOOTMODE" = "false" ]; then
   for f in bitgapps.sh microg.sh; do
-    unzip -o "$ZIPFILE" "$f" -d "$TMP" 2>/dev/null
+    unzip -oq "$ZIPFILE" "$f" -d "$TMP"
   done
 fi
 # Allow unpack, when installation base is Magisk
 if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
   for f in bitgapps.sh microg.sh; do
-    $(unzip -o "$ZIPFILE" "$f" -d "$TMP" >/dev/null 2>&1)
+    $(unzip -oq "$ZIPFILE" "$f" -d "$TMP")
   done
 fi
 for f in bitgapps.sh microg.sh; do
@@ -172,12 +172,12 @@ mount_apex() {
     case $apex in
       *.apex|*.capex)
         # Handle CAPEX APKs
-        unzip -qo $apex original_apex -d /apex
+        unzip -oq $apex original_apex -d /apex
         if [ -f "/apex/original_apex" ]; then
           apex="/apex/original_apex"
         fi
         # Handle APEX APKs
-        unzip -qo $apex apex_payload.img -d /apex
+        unzip -oq $apex apex_payload.img -d /apex
         mv -f /apex/apex_payload.img $dest.img
         mount -t ext4 -o ro,noatime $dest.img $dest 2>/dev/null
         if [ $? != 0 ]; then

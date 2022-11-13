@@ -9,7 +9,7 @@ system_as_root
 super_partition
 mount_all
 mount_apex
-get_flags
+${get_flags}
 on_uninstall
 on_installed
 # End installation

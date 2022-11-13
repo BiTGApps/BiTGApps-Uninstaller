@@ -61,6 +61,6 @@ rm -rf /data/app/*/com.google.android*
 rm -rf /data/data/com.android.vending*
 rm -rf /data/data/com.google.android*
 # Purge runtime permissions
-rm -rf $(find /data -iname "runtime-permissions.xml" 2>/dev/null)
+rm -rf $(find /data -iname "runtime-permissions.xml")
 # Remove BiTGApps Module
 rm -rf /data/adb/modules/BiTGApps
