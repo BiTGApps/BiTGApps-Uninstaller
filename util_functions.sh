@@ -1,15 +1,18 @@
 # This file is part of The BiTGApps Project
 
-# Begin installation
-umount_all
-recovery_actions
-on_partition_check
-ab_partition
-system_as_root
-super_partition
-mount_all
-mount_apex
-${get_flags}
-on_uninstall
-on_installed
-# End installation
+# Define Current Version
+version="v1.8"
+
+print_title() {
+  local LEN ONE TWO BAR
+  ONE=$(echo -n $1 | wc -c)
+  TWO=$(echo -n $2 | wc -c)
+  LEN=$TWO
+  [ $ONE -gt $TWO ] && LEN=$ONE
+  LEN=$((LEN + 2))
+  BAR=$(printf "%${LEN}s" | tr ' ' '*')
+  ui_print "$BAR"
+  ui_print " $1 "
+  [ "$2" ] && ui_print " $2 "
+  ui_print "$BAR"
+}

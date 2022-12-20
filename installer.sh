@@ -49,16 +49,6 @@ fi
 [ -z $BOOTMODE ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE="true"
 [ -z $BOOTMODE ] && BOOTMODE="false"
 
-# Extract utility script
-if [ "$BOOTMODE" = "false" ]; then
-  unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP"
-fi
-# Allow unpack, when installation base is Magisk
-if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
-  $(unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP")
-fi
-chmod +x "$TMP/util_functions.sh"
-
 # Extract uninstaller script
 if [ "$BOOTMODE" = "false" ]; then
   for f in bitgapps.sh microg.sh; do
@@ -75,6 +65,19 @@ for f in bitgapps.sh microg.sh; do
   chmod +x "$TMP/$f"
 done
 
+# Extract utility script
+if [ "$BOOTMODE" = "false" ]; then
+  unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP"
+fi
+# Allow unpack, when installation base is Magisk
+if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
+  $(unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP")
+fi
+chmod +x "$TMP/util_functions.sh"
+
+# Load utility functions
+. $TMP/util_functions.sh
+
 ui_print() {
   if [ "$BOOTMODE" = "true" ]; then
     echo "$1"
@@ -84,6 +87,8 @@ ui_print() {
     echo -n -e "ui_print\n" >> /proc/self/fd/$OUTFD
   fi
 }
+
+print_title "BiTGApps $version Uninstaller"
 
 recovery_actions() {
   if [ "$BOOTMODE" = "false" ]; then
@@ -318,11 +323,11 @@ mount_all() {
   done
   mount -o remount,rw -t auto / > /dev/null 2>&1
   ui_print "- Mounting /system"
-  if [ "$(grep -w -o '/system' /proc/mounts)" ]; then
+  if [ "$(grep -wo '/system' /proc/mounts)" ]; then
     mount -o remount,rw -t auto /system > /dev/null 2>&1
     is_mounted /system || on_abort "! Cannot mount /system"
   fi
-  if [ "$(grep -w -o '/system_root' /proc/mounts)" ]; then
+  if [ "$(grep -wo '/system_root' /proc/mounts)" ]; then
     mount -o remount,rw -t auto /system_root > /dev/null 2>&1
     is_mounted /system_root || on_abort "! Cannot mount /system_root"
   fi
@@ -425,23 +430,18 @@ on_uninstall() {
   fi
 }
 
-print_title() {
-  local LEN ONE TWO BAR
-  ONE=$(echo -n $1 | wc -c)
-  TWO=$(echo -n $2 | wc -c)
-  LEN=$TWO
-  [ $ONE -gt $TWO ] && LEN=$ONE
-  LEN=$((LEN + 2))
-  BAR=$(printf "%${LEN}s" | tr ' ' '*')
-  ui_print "$BAR"
-  ui_print " $1 "
-  [ "$2" ] && ui_print " $2 "
-  ui_print "$BAR"
-}
-
-print_title "BiTGApps v1.8 Uninstaller"
-
-# Load utility functions
-. $TMP/util_functions.sh
+# Begin installation
+umount_all
+recovery_actions
+on_partition_check
+ab_partition
+system_as_root
+super_partition
+mount_all
+mount_apex
+${get_flags}
+on_uninstall
+on_installed
+# End installation
 
 # End method
