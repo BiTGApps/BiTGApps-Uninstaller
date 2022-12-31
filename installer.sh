@@ -26,6 +26,8 @@ if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
   mount -o remount,rw,errors=continue $MIRROR/system 2>/dev/null
   mount -o remount,rw,errors=continue $MIRROR/product 2>/dev/null
   mount -o remount,rw,errors=continue $MIRROR/system_ext 2>/dev/null
+  # Product is a dedicated partition
+  PRODUCT=$(grep -s " $(readlink -f /product) " /proc/mounts)
   # Set installation layout
   SYSTEM="$MIRROR/system"
   # Backup installation layout
@@ -35,19 +37,24 @@ if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
     echo "! Read-only file system"
     exit 1
   fi
-fi
-
-# Product is a dedicated partition
-if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
-  if grep -q " $(readlink -f /product) " /proc/mounts; then
-    ln -sf /product /system
-  fi
+  # Product is a dedicated partition
+  [[ "$PRODUCT" ]] && ln -sf /product /system
 fi
 
 # Detect whether in boot mode
 [ -z $BOOTMODE ] && ps | grep zygote | grep -qv grep && BOOTMODE="true"
 [ -z $BOOTMODE ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE="true"
 [ -z $BOOTMODE ] && BOOTMODE="false"
+
+# Extract utility script
+if [ "$BOOTMODE" = "false" ]; then
+  unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP"
+fi
+# Allow unpack, when installation base is Magisk
+if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
+  $(unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP")
+fi
+chmod +x "$TMP/util_functions.sh"
 
 # Extract uninstaller script
 if [ "$BOOTMODE" = "false" ]; then
@@ -65,16 +72,6 @@ for f in bitgapps.sh microg.sh; do
   chmod +x "$TMP/$f"
 done
 
-# Extract utility script
-if [ "$BOOTMODE" = "false" ]; then
-  unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP"
-fi
-# Allow unpack, when installation base is Magisk
-if [[ "$(getprop "sys.bootmode")" = "2" ]]; then
-  $(unzip -oq "$ZIPFILE" "util_functions.sh" -d "$TMP")
-fi
-chmod +x "$TMP/util_functions.sh"
-
 # Load utility functions
 . $TMP/util_functions.sh
 
@@ -90,30 +87,11 @@ ui_print() {
 
 print_title "BiTGApps $version Uninstaller"
 
-recovery_actions() {
-  if [ "$BOOTMODE" = "false" ]; then
-    OLD_LD_LIB=$LD_LIBRARY_PATH
-    OLD_LD_PRE=$LD_PRELOAD
-    OLD_LD_CFG=$LD_CONFIG_FILE
-    unset LD_LIBRARY_PATH
-    unset LD_PRELOAD
-    unset LD_CONFIG_FILE
-  fi
-}
-
-recovery_cleanup() {
-  if [ "$BOOTMODE" = "false" ]; then
-    [ -z $OLD_LD_LIB ] || export LD_LIBRARY_PATH=$OLD_LD_LIB
-    [ -z $OLD_LD_PRE ] || export LD_PRELOAD=$OLD_LD_PRE
-    [ -z $OLD_LD_CFG ] || export LD_CONFIG_FILE=$OLD_LD_CFG
-  fi
-}
-
 on_partition_check() {
-  system_as_root=`getprop ro.build.system_root_image`
-  slot_suffix=`getprop ro.boot.slot_suffix`
-  AB_OTA_UPDATER=`getprop ro.build.ab_update`
-  dynamic_partitions=`getprop ro.boot.dynamic_partitions`
+  system_as_root=$(getprop ro.build.system_root_image)
+  slot_suffix=$(getprop ro.boot.slot_suffix)
+  AB_OTA_UPDATER=$(getprop ro.build.ab_update)
+  dynamic_partitions=$(getprop ro.boot.dynamic_partitions)
 }
 
 ab_partition() {
@@ -256,10 +234,15 @@ mount_all() {
   $SYSTEM_ROOT && ui_print "- Device is system-as-root"
   $SUPER_PARTITION && ui_print "- Super partition detected"
   # Check A/B slot
-  [ "$slot" ] || slot=$(getprop ro.boot.slot_suffix 2>/dev/null)
-  [ "$slot" ] || slot=`grep_cmdline androidboot.slot_suffix`
-  [ "$slot" ] || slot=`grep_cmdline androidboot.slot`
+  [ "$slot" ] || slot=$(getprop ro.boot.slot_suffix)
+  [ "$slot" ] || slot=$(grep_cmdline androidboot.slot_suffix)
+  [ "$slot" ] || slot=$(grep_cmdline androidboot.slot)
   [ "$slot" ] && ui_print "- Current boot slot: $slot"
+  # Store and reset environmental variables
+  OLD_LD_LIB=$LD_LIBRARY_PATH && unset LD_LIBRARY_PATH
+  OLD_LD_PRE=$LD_PRELOAD && unset LD_PRELOAD
+  OLD_LD_CFG=$LD_CONFIG_FILE && unset LD_CONFIG_FILE
+  # Make sure random won't get blocked
   mount -o bind /dev/urandom /dev/random
   if ! is_mounted /cache; then
     mount /cache > /dev/null 2>&1
@@ -355,6 +338,10 @@ unmount_all() {
     umount -l /product > /dev/null 2>&1
     umount -l /system_ext > /dev/null 2>&1
     umount -l /dev/random > /dev/null 2>&1
+    # Restore environmental variables
+    export LD_LIBRARY_PATH=$OLD_LD_LIB
+    export LD_PRELOAD=$OLD_LD_PRE
+    export LD_CONFIG_FILE=$OLD_LD_CFG
   fi
 }
 
@@ -367,7 +354,6 @@ on_abort() {
   $BOOTMODE && exit 1
   umount_apex
   unmount_all
-  recovery_cleanup
   f_cleanup
   d_cleanup
   ui_print "! Installation failed"
@@ -380,7 +366,6 @@ on_abort() {
 on_installed() {
   umount_apex
   unmount_all
-  recovery_cleanup
   f_cleanup
   d_cleanup
   ui_print "- Installation complete"
@@ -425,14 +410,13 @@ on_uninstall() {
     on_abort "! SetupWizard Installed"
   fi
   if [ -d "$SYSTEM/priv-app/PrebuiltGmsCore" ]; then
-    ui_print "- Uninstalling GApps"
+    ui_print "- Uninstalling BiTGApps"
     source $TMP/bitgapps.sh
   fi
 }
 
 # Begin installation
 umount_all
-recovery_actions
 on_partition_check
 ab_partition
 system_as_root
